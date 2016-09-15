@@ -85,8 +85,31 @@ private fun throwIllegalArgumentType(index: Int, name: String, expectedJvmType: 
 }
 
 private fun createAnnotationInstance(annotationClass: Class<*>, values: Map<String, Any>): Any {
+    val toString by lazy {
+        buildString {
+            append('@')
+            append(annotationClass.canonicalName)
+            append('(')
+            // TODO: values
+            append(')')
+        }
+    }
+
+    val hashCode by lazy {
+        // TODO
+        42
+    }
+
     return Proxy.newProxyInstance(annotationClass.classLoader /* TODO: test */, arrayOf(annotationClass)) { proxy, method, args ->
-        // TODO: support equals, hashCode, toString, annotationType
-        values[method.name] ?: throw KotlinReflectionInternalError("Method is not supported: $method (args: ${args.orEmpty().toList()})")
+        // TODO: support equals
+        // TODO: test on parameter named 'equals'
+        val name = method.name
+        when (name) {
+            "annotationType" -> annotationClass
+            "toString" -> toString
+            "hashCode" -> hashCode
+            else -> values[name]
+                    ?: throw KotlinReflectionInternalError("Method is not supported: $method (args: ${args.orEmpty().toList()})")
+        }
     }
 }
